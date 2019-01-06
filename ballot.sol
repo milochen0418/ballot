@@ -16,7 +16,6 @@ contract Election {
         string name;
         bool isRegistered;
         uint candidateNumber;
-        uint sponsored;
     }
     address[] public candiatesList;
     mapping(uint => mapping(address => Candidate)) public candidateData;
@@ -73,8 +72,7 @@ contract Election {
             }
             // refund 
             if (candidateData[round][candiatesList[i]].vote > gvote) {
-                candiatesList[i].transfer(candidateData[round][candiatesList[i]].sponsored);
-                emit refund(candiatesList[i], candidateData[round][candiatesList[i]].name, candidateData[round][candiatesList[i]].sponsored, round);
+                emit refund(candiatesList[i], candidateData[round][candiatesList[i]].name, guaranteedDeposit, round);
             }
         }
         emit elected(round, winner, candidateData[round][winner].name, candidateData[round][winner].vote);
@@ -129,7 +127,7 @@ contract Election {
     /* sponsor a candidate */
     function sponsor(address candidateAddr) public payable {
         require(candidateData[round][candidateAddr].isRegistered, "CandidateNotRegister");
-        candidateData[round][candidateAddr].sponsored = candidateData[round][candidateAddr].sponsored.add(msg.value);
+        candidateAddr.transfer(msg.value);
         emit sponsorCandidate(round, candidateAddr, candidateData[round][candidateAddr].name, msg.sender, msg.value);
     }
 
