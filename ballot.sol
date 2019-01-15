@@ -1,7 +1,7 @@
 pragma solidity ^0.4.25;
 
-//import "./SafeMath.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./SafeMath.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 
 contract Election {
@@ -17,7 +17,7 @@ contract Election {
         bool isRegistered;
         uint candidateNumber;
     }
-    address[] public candiatesList;
+    address[] public candidatesList;
     mapping(uint => mapping(address => Candidate)) public candidateData;
     mapping(uint => mapping(address => bool)) public voted;
     
@@ -65,20 +65,20 @@ contract Election {
         uint maxvote;
         uint gvote = _totalvote * 10 / refundRatio / 10;
         
-        for (uint i = 0; i < candiatesList.length; i++) {
-            if (candidateData[round][candiatesList[i]].vote > maxvote) {
-                maxvote = candidateData[round][candiatesList[i]].vote;
-                winner = candiatesList[i];
+        for (uint i = 0; i < candidatesList.length; i++) {
+            if (candidateData[round][candidatesList[i]].vote > maxvote) {
+                maxvote = candidateData[round][candidatesList[i]].vote;
+                winner = candidatesList[i];
             }
             // refund 
-            if (candidateData[round][candiatesList[i]].vote > gvote) {
-                emit refund(candiatesList[i], candidateData[round][candiatesList[i]].name, guaranteedDeposit, round);
+            if (candidateData[round][candidatesList[i]].vote > gvote) {
+                emit refund(candidatesList[i], candidateData[round][candidatesList[i]].name, guaranteedDeposit, round);
             }
         }
         emit elected(round, winner, candidateData[round][winner].name, candidateData[round][winner].vote);
 
         round = round.add(1);
-        candiatesList.length = 0;
+        candidatesList.length = 0;
         _totalvote = 0;
         emit reset(round);
         
@@ -88,11 +88,11 @@ contract Election {
     function startVoting() public onlyOwner {
         uint id;
         
-        for (uint i = 1; i <= candiatesList.length; i++) {
+        for (uint i = 1; i <= candidatesList.length; i++) {
             while (true) {
-                id = rand % (candiatesList.length + 1) - 1;
-                if (candidateData[round][candiatesList[id]].candidateNumber == 0) {
-                    candidateData[round][candiatesList[id]].candidateNumber = i;
+                id = rand % (candidatesList.length + 1) - 1;
+                if (candidateData[round][candidatesList[id]].candidateNumber == 0) {
+                    candidateData[round][candidatesList[id]].candidateNumber = i;
                     break;
                 }
             }
@@ -113,14 +113,14 @@ contract Election {
     function register(string name) public payable registerable {
         require(!candidateData[round][msg.sender].isRegistered, "AlreadyRegistered");
         require(msg.value >= guaranteedDeposit, "LowerThanguaranteedDeposit");
-        candiatesList.push(msg.sender);
+        candidatesList.push(msg.sender);
         candidateData[round][msg.sender].name = name;
         candidateData[round][msg.sender].isRegistered = true;
         emit registered(round, msg.sender);
     }
 
-    function getCandidatesList() public view returns (address[]) {
-        return candiatesList;
+    function getCandidatesList() public view returns ( address[]) {
+        return candidatesList;
     }
 
     // Extra bonus
